@@ -1,0 +1,31 @@
+clear
+
+format long g
+
+x = csvread('Default_Dataset.csv');
+
+#Change the following values according to your guide settings and AM5 PE chart
+guide_rate = 0.5 # 0.5X, 0.9X, etc.
+PHD2_sec_per_frame = 1 ;
+Xo = 93.6 #degrees at left side of chart (not needed really because we are interested in differences)
+
+deg = x(:,1);
+err_asec = x(:,2);
+
+t = (deg-Xo)*(430.82/1.8); #convert degrees to seconds of time
+
+dt = diff(t);
+de = diff(err_asec);
+
+deri = rdivide(de,dt); #divide each element of the de matrix by the corresponding element in the dt matrix
+
+max_slope_pos = max(deri);
+max_slope_neg = min(deri);
+
+max_slope = max(abs(max_slope_pos),abs(max_slope_neg));
+
+asec_guide_rate = 15.0 * guide_rate / PHD2_sec_per_frame
+
+max_AR_pulse_ms = max_slope/asec_guide_rate * 1000;
+
+printf("RA guide pulse %.2f ms\n", max_AR_pulse_ms);
